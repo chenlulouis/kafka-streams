@@ -1,0 +1,6 @@
+1 zhangsan m 18
+2 lisi f 20
+3 wangwu m 30
+4 zhangsan1 m 19
+5 lisi1 f 21
+6 wangwu1 m 31
