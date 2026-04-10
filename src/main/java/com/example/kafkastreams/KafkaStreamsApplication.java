@@ -50,21 +50,15 @@ public class KafkaStreamsApplication implements CommandLineRunner {
         sparkConf.setMaster("local[1]");
 
 
-        var spark = SparkSession.builder().config(sparkConf).appName("").master("").getOrCreate();
-        spark.sparkContext().setLogLevel("ERROR");
-
-
-
-
         JavaStreamingContext streamingContext = new JavaStreamingContext(
-                sparkConf, Durations.seconds(60));
+                sparkConf, Durations.seconds(6));
         streamingContext.sparkContext().setLogLevel("ERROR");
         //Getting DStream from Kafka
         Map<String, Object> kafkaParams = new HashMap<>();
         kafkaParams.put("bootstrap.servers", "localhost:9092");
         kafkaParams.put("key.deserializer", StringDeserializer.class);
         kafkaParams.put("value.deserializer", StringDeserializer.class);
-        kafkaParams.put("group.id", "use_a_separate_group_id_for_each_stream");
+        kafkaParams.put("group.id", "use_a_separate_group_id_for_each_stream_3");
         kafkaParams.put("auto.offset.reset", "latest");
         kafkaParams.put("enable.auto.commit", false);
         Collection<String> topics = Arrays.asList("messages");
@@ -99,7 +93,7 @@ public class KafkaStreamsApplication implements CommandLineRunner {
 
         //Persisting Processed DStream into PostGreSQL
         //wordCounts.print();
-        Class.forName("org.postgresql.Driver");
+
         wordCounts.foreachRDD(
                 javaRdd -> {
                     Map<String, Integer> wordCountMap = javaRdd.collectAsMap();
@@ -108,6 +102,7 @@ public class KafkaStreamsApplication implements CommandLineRunner {
                         JavaRDD<Word> rdd = streamingContext.sparkContext().parallelize(wordList);
 
                         rdd.foreach(word -> {
+                            Class.forName("org.postgresql.Driver");
                             var connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "postgres", "postgres");
                             var statement = connection.prepareStatement("INSERT INTO public.words (word, count) VALUES (?, ?);");
                             // set parameters
